@@ -1,12 +1,15 @@
-import { TurretMode } from "../sprites/turret";
+import { Turret, TurretMode, BulletType } from "../sprites/turret";
 import "./TurretMode.css";
 
 interface TurretModeProps {
-    mode: string;
+    turret: Turret;
 }
 
 export function TurretModeComponent(props: TurretModeProps): JSX.Element {
-    let turretMode: string = props.mode;
+    const {
+        turretMode,
+        bulletType,
+    }: { turretMode: string; bulletType: string } = props.turret;
 
     return (
         <table>
@@ -46,10 +49,27 @@ export function TurretModeComponent(props: TurretModeProps): JSX.Element {
                     </td>
                     <td>
                         {/* TODO: implement bullet types */}
-                        <ul className="turretMode">
-                            <li>(5) Single</li>
-                            <li>(6) Bounce</li>
-                            <li>(7) Burst</li>
+                        <ul
+                            key="bulletTypes"
+                            className="turretMode"
+                            data-testid="bulletTypes"
+                        >
+                            {Array.from(BulletType.KEYBOARD_TO_TYPE).map(
+                                (type, index) => {
+                                    let keyboardKey: string = type[0];
+                                    let typeName: string = type[1];
+                                    return (
+                                        <li
+                                            key={index}
+                                            style={
+                                                keyboardKey === bulletType
+                                                    ? { fontWeight: "bold" }
+                                                    : {}
+                                            }
+                                        >{`(${keyboardKey}) ${typeName}`}</li>
+                                    );
+                                },
+                            )}
                         </ul>
                     </td>
                 </tr>

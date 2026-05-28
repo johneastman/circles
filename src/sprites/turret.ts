@@ -18,6 +18,18 @@ export class TurretMode {
     ]);
 }
 
+export class BulletType {
+    static DEFAULT: {key: string, displayName: string} = {key: "5", displayName: "Default"};
+    static BOUNCE:  {key: string, displayName: string} = {key: "6", displayName: "Bounce"};
+    static BURST:   {key: string, displayName: string} = {key: "7", displayName: "Burst"};
+
+    static KEYBOARD_TO_TYPE: Map<string, string> = new Map([
+        [this.DEFAULT.key, this.DEFAULT.displayName],
+        [this.BOUNCE.key, this.BOUNCE.displayName],
+        [this.BURST.key, this.BURST.displayName],
+    ]);
+}
+
 export class Turret implements Sprite {
     radius: number = 20;
     turretLength: number = 50;
@@ -25,6 +37,7 @@ export class Turret implements Sprite {
     barrelEnd: Vector;
 
     turretMode: string;
+    bulletType: string;
     turretModeKey: string;
     /*
     position: where to place the turret. This will be the (x, y) position for the base of the turret.
@@ -35,6 +48,7 @@ export class Turret implements Sprite {
         this.turretModeKey = "turretMode";
 
         this.turretMode = this.getTurretMode();
+        this.bulletType = this.getBulletType();
     }
 
     draw(context: CanvasRenderingContext2D): void {        
@@ -97,5 +111,14 @@ export class Turret implements Sprite {
 
     getTurretMode(): string {
         return getValue(this.turretModeKey) || TurretMode.DEFAULT.key;
+    }
+
+    getBulletType(): string {
+        return getValue("bulletType") || BulletType.DEFAULT.key;
+    }
+
+    setBulletType(type: string): void {
+        this.bulletType = type;
+        setValue("bulletType", type);
     }
 }

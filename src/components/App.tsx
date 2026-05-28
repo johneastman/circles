@@ -8,7 +8,7 @@ import {
     SplitterCircle,
 } from "../sprites/circles";
 import { Vector } from "../utils/vector";
-import { Turret, TurretMode } from "../sprites/turret";
+import { BulletType, Turret, TurretMode } from "../sprites/turret";
 import { getRandomColor, percentChance } from "../utils/util";
 import { Color } from "../utils/color";
 import Canvas from "./Canvas";
@@ -53,7 +53,7 @@ class App extends React.Component<{}, AppState> {
             circles: this.createCircles(),
             bullets: [],
             turret: new Turret(
-                new Vector(this.canvasWidth / 2, this.canvasHeight)
+                new Vector(this.canvasWidth / 2, this.canvasHeight),
             ),
             isGameOver: false,
 
@@ -102,9 +102,7 @@ class App extends React.Component<{}, AppState> {
                                 onClick={this.fireBullet.bind(this)}
                                 onMouseMove={this.turretFollowMouse.bind(this)}
                             />
-                            <TurretModeComponent
-                                mode={this.state.turret.turretMode}
-                            />
+                            <TurretModeComponent turret={this.state.turret} />
                         </div>
                         <div className="scoreBoardFloating">
                             <div className="scoreBoard">
@@ -159,7 +157,7 @@ class App extends React.Component<{}, AppState> {
             let gameOverText: Text = new Text(
                 "Game Over",
                 this.canvasWidth / 2,
-                this.canvasHeight / 2 - 10
+                this.canvasHeight / 2 - 10,
             );
 
             let scoreText: Text = new Text(
@@ -167,7 +165,7 @@ class App extends React.Component<{}, AppState> {
                 this.canvasWidth / 2,
                 this.canvasHeight / 2 + 33,
                 undefined,
-                35
+                35,
             );
 
             // Setting "isGameOVer" flag avoids infinite recursion with setting state and re-renders
@@ -182,30 +180,38 @@ class App extends React.Component<{}, AppState> {
         keyboardEvent.stopImmediatePropagation();
 
         let turret: Turret = this.state.turret;
+        const keyPressed: string = keyboardEvent.key.toLowerCase();
 
-        switch (keyboardEvent.key.toLowerCase()) {
-            case "r":
-                this.resetGame();
-                break;
-            case TurretMode.DEFAULT.key:
-                turret.setTurretMode(TurretMode.DEFAULT.key);
-                break;
-            case TurretMode.BOUNCE.key:
-                turret.setTurretMode(TurretMode.BOUNCE.key);
-                break;
-            case TurretMode.ARRAY.key:
-                turret.setTurretMode(TurretMode.ARRAY.key);
-                break;
-            case TurretMode.BURST.key:
-                turret.setTurretMode(TurretMode.BURST.key);
-                break;
+        // Reset Game
+        if (keyPressed === "r") {
+            this.resetGame();
         }
+
+        // Turret Mode
+        if (
+            keyPressed === TurretMode.DEFAULT.key ||
+            keyPressed === TurretMode.BOUNCE.key ||
+            keyPressed === TurretMode.ARRAY.key ||
+            keyPressed === TurretMode.BURST.key
+        ) {
+            turret.setTurretMode(keyPressed);
+        }
+
+        // Bullet Type
+        if (
+            keyPressed === BulletType.DEFAULT.key ||
+            keyPressed === BulletType.BOUNCE.key ||
+            keyPressed === BulletType.BURST.key
+        ) {
+            turret.setBulletType(keyPressed);
+        }
+
         this.setState({ turret: turret });
     }
 
     // Make the turret follow the player's mouse
     turretFollowMouse(
-        e: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+        e: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     ): void {
         if (!this.state.isDialogOpen) {
             let rect: DOMRect = (
@@ -213,7 +219,7 @@ class App extends React.Component<{}, AppState> {
             ).getBoundingClientRect();
             let mouseVector: Vector = new Vector(
                 e.clientX - rect.left,
-                e.clientY - rect.top
+                e.clientY - rect.top,
             );
 
             let turret: Turret = this.state.turret;
@@ -232,7 +238,7 @@ class App extends React.Component<{}, AppState> {
     }
 
     resetGameMouseEvent(
-        _: React.MouseEvent<HTMLButtonElement, MouseEvent>
+        _: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     ): void {
         this.resetGame();
     }
@@ -241,6 +247,7 @@ class App extends React.Component<{}, AppState> {
         // Set the turret mode back to default because the turret mode is stored in localStorage.
         let turret: Turret = this.state.turret;
         turret.setTurretMode(TurretMode.DEFAULT.key);
+        turret.setBulletType(BulletType.DEFAULT.key);
 
         // Clear data from localStorage
         clearValues();
@@ -262,7 +269,7 @@ class App extends React.Component<{}, AppState> {
     mainLoop() {
         if (!this.state.isDialogOpen) {
             let circles: Circle[] = this.state.circles.concat(
-                this.state.bullets
+                this.state.bullets,
             );
             for (let i = 0; i < circles.length; i++) {
                 const current: Circle = circles[i];

@@ -1,9 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { TurretModeComponent } from "../../components/TurretMode";
-import { TurretMode } from "../../sprites/turret";
+import { Turret, TurretMode } from "../../sprites/turret";
+import { Vector } from "../../utils/vector";
 
 test("render turret mode", () => {
-    render(<TurretModeComponent mode={TurretMode.DEFAULT.key} />);
+    render(<TurretModeComponent turret={new Turret(new Vector(0, 0))} />);
     const linkElement = screen.getByTestId("turretModes");
     expect(linkElement).toBeInTheDocument();
 });
