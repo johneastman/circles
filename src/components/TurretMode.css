@@ -1,3 +1,7 @@
+.turretModeTableLabel {
+    text-align: right;
+}
+
 .turretMode {
     text-align: left;
     list-style-type: none;

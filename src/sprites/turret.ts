@@ -5,7 +5,7 @@ import { Vector } from "../utils/vector";
 import { getValue, setValue } from "../utils/storage";
 
 export class TurretMode {
-    static DEFAULT: {key: string, displayName: string} = {key: "1", displayName: "Default"};
+    static DEFAULT: {key: string, displayName: string} = {key: "1", displayName: "Single"};
     static BOUNCE:  {key: string, displayName: string} = {key: "2", displayName: "Bounce"};
     static ARRAY:   {key: string, displayName: string} = {key: "3", displayName: "Array"};
     static BURST:   {key: string, displayName: string} = {key: "4", displayName: "Burst"};
@@ -83,7 +83,7 @@ export class Turret implements Sprite {
                 bullets = [new Bullet(app, this.barrelStart, this.barrelEnd, 0, 3)];
                 break;
             default:
-                // TurretMode.DEFAULT
+                // 
                 bullets = [new Bullet(app, this.barrelStart, this.barrelEnd)];
                 break;
         }
