@@ -5,29 +5,24 @@ import { Vector } from "../utils/vector";
 import { getValue, setValue } from "../utils/storage";
 
 export class TurretMode {
-    static DEFAULT: {key: string, displayName: string} = {key: "1", displayName: "Single"};
-    static BOUNCE:  {key: string, displayName: string} = {key: "2", displayName: "Bounce"};
-    static ARRAY:   {key: string, displayName: string} = {key: "3", displayName: "Array"};
-    static BURST:   {key: string, displayName: string} = {key: "4", displayName: "Burst"};
+    static SINGLE: string = "Single";
+    static ARRAY: string = "Array";
 
-    static KEYBOARD_TO_MODE: Map<string, string> = new Map([
-        [this.DEFAULT.key, this.DEFAULT.displayName],
-        [this.BOUNCE.key, this.BOUNCE.displayName],
-        [this.ARRAY.key, this.ARRAY.displayName],
-        [this.BURST.key, this.BURST.displayName],
-    ]);
+    static KEYBOARD_TO_MODE: string[] = [
+        this.SINGLE, this.ARRAY
+    ];
 }
 
 export class BulletType {
-    static DEFAULT: {key: string, displayName: string} = {key: "5", displayName: "Default"};
-    static BOUNCE:  {key: string, displayName: string} = {key: "6", displayName: "Bounce"};
-    static BURST:   {key: string, displayName: string} = {key: "7", displayName: "Burst"};
+    static DEFAULT: string = "Default";
+    static BOUNCE: string = "Bounce";
+    static BURST: string = "Burst";
 
-    static KEYBOARD_TO_TYPE: Map<string, string> = new Map([
-        [this.DEFAULT.key, this.DEFAULT.displayName],
-        [this.BOUNCE.key, this.BOUNCE.displayName],
-        [this.BURST.key, this.BURST.displayName],
-    ]);
+    static KEYBOARD_TO_TYPE: string[] = [
+        this.DEFAULT,
+        this.BOUNCE,
+        this.BURST
+    ];
 }
 
 export class Turret implements Sprite {
@@ -76,32 +71,41 @@ export class Turret implements Sprite {
     }
 
     getBullets(app: App): Bullet[] {
-        let bullets: Bullet[];
+        if (this.turretMode === TurretMode.SINGLE) {
+            if (this.bulletType === BulletType.DEFAULT) {
+                return [new Bullet(app, this.barrelStart, this.barrelEnd)];
+            } else if (this.bulletType === BulletType.BOUNCE) {
+                return [new Bullet(app, this.barrelStart, this.barrelEnd, 0, 3)];
+            } else if (this.bulletType === BulletType.BURST) {
+                return [new SplitterBullet(app, this.barrelStart, this.barrelEnd)];
+            }
+        } else if (this.turretMode === TurretMode.ARRAY) {
+            let perpendicularPoints: Vector[] = Vector.perpendicularTo(this.barrelStart, this.barrelEnd, 8);
+            let left: Vector = perpendicularPoints[0];
+            let right: Vector = perpendicularPoints[1];
 
-        switch (this.turretMode) {
-            case TurretMode.ARRAY.key:
-                let perpendicularPoints: Vector[] = Vector.perpendicularTo(this.barrelStart, this.barrelEnd, 8);
-                let left: Vector = perpendicularPoints[0];
-                let right: Vector = perpendicularPoints[1];
-    
-                bullets = [
+            if (this.bulletType === BulletType.DEFAULT) {
+                return [
                     new Bullet(app, this.barrelStart, this.barrelEnd),
                     new Bullet(app, this.barrelStart, left),
                     new Bullet(app, this.barrelStart, right)
                 ];
-                break;
-            case TurretMode.BURST.key:
-                bullets = [new SplitterBullet(app, this.barrelStart, this.barrelEnd)];
-                break;
-            case TurretMode.BOUNCE.key:
-                bullets = [new Bullet(app, this.barrelStart, this.barrelEnd, 0, 3)];
-                break;
-            default:
-                // 
-                bullets = [new Bullet(app, this.barrelStart, this.barrelEnd)];
-                break;
+            } else if (this.bulletType === BulletType.BOUNCE) {
+                return [
+                    new Bullet(app, this.barrelStart, this.barrelEnd, 0, 3),
+                    new Bullet(app, this.barrelStart, left, 0, 3),
+                    new Bullet(app, this.barrelStart, right, 0, 3)
+                ];
+            } else if (this.bulletType === BulletType.BURST) {
+                return [
+                    new SplitterBullet(app, this.barrelStart, this.barrelEnd),
+                    new SplitterBullet(app, this.barrelStart, left),
+                    new SplitterBullet(app, this.barrelStart, right)
+                ];
+            }
         }
-        return bullets;
+
+        return [];
     }
 
     setTurretMode(mode: string): void {
@@ -110,11 +114,11 @@ export class Turret implements Sprite {
     }
 
     getTurretMode(): string {
-        return getValue(this.turretModeKey) || TurretMode.DEFAULT.key;
+        return getValue(this.turretModeKey) || TurretMode.SINGLE;
     }
 
     getBulletType(): string {
-        return getValue("bulletType") || BulletType.DEFAULT.key;
+        return getValue("bulletType") || BulletType.DEFAULT;
     }
 
     setBulletType(type: string): void {

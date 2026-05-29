@@ -187,24 +187,20 @@ class App extends React.Component<{}, AppState> {
             this.resetGame();
         }
 
-        // Turret Mode
-        if (
-            keyPressed === TurretMode.DEFAULT.key ||
-            keyPressed === TurretMode.BOUNCE.key ||
-            keyPressed === TurretMode.ARRAY.key ||
-            keyPressed === TurretMode.BURST.key
-        ) {
-            turret.setTurretMode(keyPressed);
-        }
+        TurretMode.KEYBOARD_TO_MODE.forEach((_, index) => {
+            const keyboardKey: number = index + 1;
+            if (keyPressed === keyboardKey.toString()) {
+                turret.setTurretMode(TurretMode.KEYBOARD_TO_MODE[index]);
+            }
+        });
 
-        // Bullet Type
-        if (
-            keyPressed === BulletType.DEFAULT.key ||
-            keyPressed === BulletType.BOUNCE.key ||
-            keyPressed === BulletType.BURST.key
-        ) {
-            turret.setBulletType(keyPressed);
-        }
+        BulletType.KEYBOARD_TO_TYPE.forEach((_, index) => {
+            const keyboardKey: number =
+                index + TurretMode.KEYBOARD_TO_MODE.length + 1;
+            if (keyPressed === keyboardKey.toString()) {
+                turret.setBulletType(BulletType.KEYBOARD_TO_TYPE[index]);
+            }
+        });
 
         this.setState({ turret: turret });
     }
@@ -246,8 +242,8 @@ class App extends React.Component<{}, AppState> {
     clearData(): void {
         // Set the turret mode back to default because the turret mode is stored in localStorage.
         let turret: Turret = this.state.turret;
-        turret.setTurretMode(TurretMode.DEFAULT.key);
-        turret.setBulletType(BulletType.DEFAULT.key);
+        turret.setTurretMode(TurretMode.SINGLE);
+        turret.setBulletType(BulletType.DEFAULT);
 
         // Clear data from localStorage
         clearValues();

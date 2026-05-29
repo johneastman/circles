@@ -26,17 +26,16 @@ export function TurretModeComponent(props: TurretModeProps): JSX.Element {
                         >
                             {Array.from(TurretMode.KEYBOARD_TO_MODE).map(
                                 (mode, index) => {
-                                    let keyboardKey: string = mode[0];
-                                    let modeName: string = mode[1];
+                                    const keyboardKey: number = index + 1;
                                     return (
                                         <li
-                                            key={index}
+                                            key={keyboardKey}
                                             style={
-                                                keyboardKey === turretMode
+                                                mode === turretMode
                                                     ? { fontWeight: "bold" }
                                                     : {}
                                             }
-                                        >{`(${keyboardKey}) ${modeName}`}</li>
+                                        >{`(${keyboardKey}) ${mode}`}</li>
                                     );
                                 },
                             )}
@@ -56,17 +55,19 @@ export function TurretModeComponent(props: TurretModeProps): JSX.Element {
                         >
                             {Array.from(BulletType.KEYBOARD_TO_TYPE).map(
                                 (type, index) => {
-                                    let keyboardKey: string = type[0];
-                                    let typeName: string = type[1];
+                                    const keyboardKey: number =
+                                        index +
+                                        TurretMode.KEYBOARD_TO_MODE.length +
+                                        1;
                                     return (
                                         <li
-                                            key={index}
+                                            key={keyboardKey}
                                             style={
-                                                keyboardKey === bulletType
+                                                type === bulletType
                                                     ? { fontWeight: "bold" }
                                                     : {}
                                             }
-                                        >{`(${keyboardKey}) ${typeName}`}</li>
+                                        >{`(${keyboardKey}) ${type}`}</li>
                                     );
                                 },
                             )}
