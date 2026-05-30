@@ -3,6 +3,7 @@ import { Vector } from "../utils/vector";
 import { sign, getCurrentTime, getRandomFloat, getRandomInteger, getRandomColor } from "../utils/util"
 import App from "../components/App";
 import { Sprite } from "./sprite";
+import { GameEvent } from "../events";
 
 export abstract class Circle implements Sprite {
     canvasWidth: number;
@@ -17,6 +18,7 @@ export abstract class Circle implements Sprite {
     collisionColorTimeActive: number;
     startTime: number;
     app: App;
+    edgeCollisionCounter: number = 0;
 
     colorOffset: number = 40;
 
@@ -122,11 +124,10 @@ export abstract class Circle implements Sprite {
      * to fly off the canvas--we need to check if the circle is at the edge of the canvas so it appears
      * to bounces off the edge.
      */
-    checkEdges(): boolean {
+    checkEdges(): GameEvent[] {
 
         if (this.isOutsideBounds()) {
-            this.app.removeCircle(this);
-            return true;
+            return [{type: "REMOVE_CIRCLE", circle: this}];
         }
 
         // Right side of canvas
@@ -134,15 +135,15 @@ export abstract class Circle implements Sprite {
             this.startTime = getCurrentTime();
             this.pos.x = this.canvasWidth - this.radius;
             this.vel.x *= -1;
-            return true;
+            this.edgeCollisionCounter += 1;
         }
-        
+
         // Left side of canvas
         if (this.pos.x - this.radius <= 0) {
             this.startTime = getCurrentTime();
             this.pos.x = this.radius;
             this.vel.x *= -1;
-            return true;
+            this.edgeCollisionCounter += 1;
         }
 
         // Bottom of canvas
@@ -150,17 +151,17 @@ export abstract class Circle implements Sprite {
             this.startTime = getCurrentTime();
             this.pos.y = this.canvasHeight - this.radius;
             this.vel.y *= -1;
-            return true;
+            this.edgeCollisionCounter += 1;
         }
-        
+
         // Top of canvas
         if (this.pos.y - this.radius <= 0) {
             this.startTime = getCurrentTime();
             this.pos.y = this.radius;
             this.vel.y *= -1;
-            return true;
+            this.edgeCollisionCounter += 1;
         }
-        return false;
+        return [];
     }
 
     /**
@@ -277,18 +278,17 @@ export class Bullet extends Circle {
      * off the edge--we want to check if the bullet is beyond the bounds of the canvas so it appears to fly off the
      * screen.
      */
-    checkEdges(): boolean {
-        if (this.bounceCounter > 0 && super.checkEdges()) {
-            this.bounceCounter -= 1;
-            return true;
+    checkEdges(): GameEvent[] {
+        if (this.edgeCollisionCounter < this.bounceCounter) {
+            super.checkEdges();
+            return [];
         }
 
         if (this.isOutsideBounds()) {
-            this.app.removeBullet(this);
-            return true;
+            return [{type: "REMOVE_BULLET", circle: this}];
         }
 
-        return false;
+        return [];
     }
 
     collisionUpdate(other: Circle): void {

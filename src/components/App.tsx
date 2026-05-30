@@ -1,5 +1,4 @@
 import React from "react";
-
 import "./App.css";
 import {
     Circle,
@@ -19,6 +18,7 @@ import { Menu } from "./Menu";
 import { Sprite } from "../sprites/sprite";
 import Dialog from "./Dialog";
 import { clearValues } from "../utils/storage";
+import { GameEvent } from "../events";
 
 interface AppState {
     score: number;
@@ -283,7 +283,13 @@ class App extends React.Component<{}, AppState> {
                     }
                 }
 
-                current.checkEdges(); // Handle how circles respond at the edges of the canvas
+                const events: GameEvent[] = current.checkEdges(); // Handle how circles respond at the edges of the canvas
+                for (let { type, circle } of events) {
+                    if (type === "REMOVE_CIRCLE") this.removeCircle(circle);
+                    else if (type === "REMOVE_BULLET")
+                        this.removeBullet(circle as Bullet);
+                }
+
                 current.update();
             }
         }

@@ -25,17 +25,17 @@ export function TurretModeComponent(props: TurretModeProps): JSX.Element {
                             data-testid="turretModes"
                         >
                             {Array.from(TurretMode.KEYBOARD_TO_MODE).map(
-                                (mode, index) => {
+                                (currentTurretMode, index) => {
                                     const keyboardKey: number = index + 1;
                                     return (
                                         <li
                                             key={keyboardKey}
                                             style={
-                                                mode === turretMode
+                                                currentTurretMode === turretMode
                                                     ? { fontWeight: "bold" }
                                                     : {}
                                             }
-                                        >{`(${keyboardKey}) ${mode}`}</li>
+                                        >{`(${keyboardKey}) ${currentTurretMode}`}</li>
                                     );
                                 },
                             )}
@@ -54,7 +54,7 @@ export function TurretModeComponent(props: TurretModeProps): JSX.Element {
                             data-testid="bulletTypes"
                         >
                             {Array.from(BulletType.KEYBOARD_TO_TYPE).map(
-                                (type, index) => {
+                                (currentBulletType, index) => {
                                     const keyboardKey: number =
                                         index +
                                         TurretMode.KEYBOARD_TO_MODE.length +
@@ -63,11 +63,11 @@ export function TurretModeComponent(props: TurretModeProps): JSX.Element {
                                         <li
                                             key={keyboardKey}
                                             style={
-                                                type === bulletType
+                                                currentBulletType === bulletType
                                                     ? { fontWeight: "bold" }
                                                     : {}
                                             }
-                                        >{`(${keyboardKey}) ${type}`}</li>
+                                        >{`(${keyboardKey}) ${currentBulletType}`}</li>
                                     );
                                 },
                             )}
