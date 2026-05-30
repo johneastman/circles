@@ -1,4 +1,3 @@
-import App from "../components/App";
 import { Bullet, SplitterBullet } from "./circles";
 import { Sprite } from "./sprite";
 import { Vector } from "../utils/vector";

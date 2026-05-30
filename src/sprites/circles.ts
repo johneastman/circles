@@ -1,7 +1,6 @@
 import { Color } from "../utils/color";
 import { Vector } from "../utils/vector";
 import { sign, getCurrentTime, getRandomFloat, getRandomInteger, getRandomColor } from "../utils/util"
-import App from "../components/App";
 import { Sprite } from "./sprite";
 import { GameEvent } from "../events";
 
