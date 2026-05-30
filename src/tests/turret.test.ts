@@ -1,5 +1,4 @@
-import App from "../components/App";
-import { Bullet, SplitterBullet } from "../sprites/circles";
+import { SplitterBullet } from "../sprites/circles";
 import { TurretMode, BulletType, Turret } from "../sprites/turret";
 import { Vector } from "../utils/vector";
 
