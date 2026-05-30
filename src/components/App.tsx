@@ -228,7 +228,10 @@ class App extends React.Component<{}, AppState> {
     fireBullet(_: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
         if (!this.state.isDialogOpen) {
             let turret: Turret = this.state.turret;
-            let bullets: Bullet[] = turret.getBullets(this);
+            let bullets: Bullet[] = turret.getBullets(
+                this.canvasWidth,
+                this.canvasHeight,
+            );
             this.setState({ bullets: this.state.bullets.concat(bullets) });
         }
     }
@@ -277,17 +280,29 @@ class App extends React.Component<{}, AppState> {
                 */
                 const rest: Circle[] = circles.slice(i + 1);
 
+                let gameEvents: GameEvent[] = [];
+
                 for (let circle of rest) {
                     if (circle.collidedWith(current)) {
-                        circle.collisionUpdate(current);
+                        gameEvents = gameEvents.concat(
+                            circle.collisionUpdate(current),
+                        );
                     }
                 }
 
-                const events: GameEvent[] = current.checkEdges(); // Handle how circles respond at the edges of the canvas
-                for (let { type, circle } of events) {
-                    if (type === "REMOVE_CIRCLE") this.removeCircle(circle);
-                    else if (type === "REMOVE_BULLET")
+                gameEvents = gameEvents.concat(current.checkEdges()); // Handle how circles respond at the edges of the canvas
+                for (let { type, circle } of gameEvents) {
+                    if (type === "ADD_CIRCLE") {
+                        this.addCircle(circle);
+                    } else if (type === "REMOVE_CIRCLE") {
+                        this.removeCircle(circle);
+                    } else if (type === "ADD_BULLET") {
+                        this.addBullet(circle as Bullet);
+                    } else if (type === "REMOVE_BULLET") {
                         this.removeBullet(circle as Bullet);
+                    } else if (type === "UPDATE_SCORE") {
+                        this.updateScore(circle as Bullet);
+                    }
                 }
 
                 current.update();
@@ -304,41 +319,47 @@ class App extends React.Component<{}, AppState> {
 
             // 15 percent change the circle is a splitter circle
             let circle: Circle = percentChance(0.15)
-                ? new SplitterCircle(this)
-                : new TargetCircle(this, color);
+                ? new SplitterCircle(this.canvasWidth, this.canvasHeight)
+                : new TargetCircle(this.canvasWidth, this.canvasHeight, color);
             circles.push(circle);
         }
         return circles;
     }
 
-    addCircles(newCircles: Circle[]): void {
-        this.setState({ circles: this.state.circles.concat(newCircles) });
+    addCircle(newCircle: Circle): void {
+        this.setState((prev) => ({ circles: prev.circles.concat(newCircle) }));
     }
 
     removeCircle(circle: Circle): void {
-        let circles: Circle[] = this.state.circles;
+        // let circles: Circle[] = this.state.circles;
 
-        let index: number = circles.indexOf(circle);
-        circles.splice(index, 1);
+        // let index: number = circles.indexOf(circle);
+        // circles.splice(index, 1);
 
-        this.setState({ circles: circles });
+        this.setState((prev) => ({
+            circles: prev.circles.filter((c) => c !== circle),
+        }));
     }
 
     removeBullet(bullet: Bullet): void {
-        let bullets: Bullet[] = this.state.bullets;
+        // let bullets: Bullet[] = this.state.bullets;
 
-        let index: number = bullets.indexOf(bullet);
-        bullets.splice(index, 1);
+        // let index: number = bullets.indexOf(bullet);
+        // bullets.splice(index, 1);
 
-        this.setState({ bullets: bullets });
+        this.setState((prev) => ({
+            bullets: prev.bullets.filter((b) => b !== bullet),
+        }));
     }
 
-    addBullets(newBullets: Bullet[]): void {
-        this.setState({ bullets: this.state.bullets.concat(newBullets) });
+    addBullet(newBullet: Bullet): void {
+        this.setState((prev) => ({ bullets: prev.bullets.concat(newBullet) }));
     }
 
     updateScore(bullet: Bullet): void {
-        this.setState({ score: this.state.score + bullet.scoreMultiplier });
+        this.setState((prev) => ({
+            score: prev.score + bullet.scoreMultiplier,
+        }));
     }
 }
 

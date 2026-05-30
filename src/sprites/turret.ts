@@ -70,14 +70,14 @@ export class Turret implements Sprite {
         this.barrelEnd = Vector.distanceFrom(this.barrelStart, mousePosVector, this.turretLength)
     }
 
-    getBullets(app: App): Bullet[] {
+    getBullets(canvasWidth: number, canvasHeight: number): Bullet[] {
         if (this.turretMode === TurretMode.SINGLE) {
             if (this.bulletType === BulletType.DEFAULT) {
-                return [new Bullet(app, this.barrelStart, this.barrelEnd)];
+                return [new Bullet(canvasWidth, canvasHeight, this.barrelStart, this.barrelEnd)];
             } else if (this.bulletType === BulletType.BOUNCE) {
-                return [new Bullet(app, this.barrelStart, this.barrelEnd, 0, 3)];
+                return [new Bullet(canvasWidth, canvasHeight, this.barrelStart, this.barrelEnd, 0, 3)];
             } else if (this.bulletType === BulletType.BURST) {
-                return [new SplitterBullet(app, this.barrelStart, this.barrelEnd)];
+                return [new SplitterBullet(canvasWidth, canvasHeight, this.barrelStart, this.barrelEnd)];
             }
         } else if (this.turretMode === TurretMode.ARRAY) {
             let perpendicularPoints: Vector[] = Vector.perpendicularTo(this.barrelStart, this.barrelEnd, 8);
@@ -86,21 +86,21 @@ export class Turret implements Sprite {
 
             if (this.bulletType === BulletType.DEFAULT) {
                 return [
-                    new Bullet(app, this.barrelStart, this.barrelEnd),
-                    new Bullet(app, this.barrelStart, left),
-                    new Bullet(app, this.barrelStart, right)
+                    new Bullet(canvasWidth, canvasHeight, this.barrelStart, this.barrelEnd),
+                    new Bullet(canvasWidth, canvasHeight, this.barrelStart, left),
+                    new Bullet(canvasWidth, canvasHeight, this.barrelStart, right)
                 ];
             } else if (this.bulletType === BulletType.BOUNCE) {
                 return [
-                    new Bullet(app, this.barrelStart, this.barrelEnd, 0, 3),
-                    new Bullet(app, this.barrelStart, left, 0, 3),
-                    new Bullet(app, this.barrelStart, right, 0, 3)
+                    new Bullet(canvasWidth, canvasHeight, this.barrelStart, this.barrelEnd, 0, 3),
+                    new Bullet(canvasWidth, canvasHeight, this.barrelStart, left, 0, 3),
+                    new Bullet(canvasWidth, canvasHeight, this.barrelStart, right, 0, 3)
                 ];
             } else if (this.bulletType === BulletType.BURST) {
                 return [
-                    new SplitterBullet(app, this.barrelStart, this.barrelEnd),
-                    new SplitterBullet(app, this.barrelStart, left),
-                    new SplitterBullet(app, this.barrelStart, right)
+                    new SplitterBullet(canvasWidth, canvasHeight, this.barrelStart, this.barrelEnd),
+                    new SplitterBullet(canvasWidth, canvasHeight, this.barrelStart, left),
+                    new SplitterBullet(canvasWidth, canvasHeight, this.barrelStart, right)
                 ];
             }
         }

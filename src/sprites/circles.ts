@@ -17,23 +17,22 @@ export abstract class Circle implements Sprite {
     acc: Vector;
     collisionColorTimeActive: number;
     startTime: number;
-    app: App;
     edgeCollisionCounter: number = 0;
 
     colorOffset: number = 40;
 
     constructor(
-        app: App,
         x: number,
         y: number,
+        canvasWidth: number,
+        canvasHeight: number,
         radius: number,
         mass: number,
         color: Color,
         velocity?: Vector) {
-        
-        this.app = app;
-        this.canvasWidth = app.canvasWidth;
-        this.canvasHeight = app.canvasHeight;
+
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
         
         /*
         When objects collide, the color should change to a lighter version of the given color. The amount lighter is specified
@@ -80,7 +79,7 @@ export abstract class Circle implements Sprite {
      * 
      * @param other another Circle object
      */
-    collisionUpdate(other: Circle): void {
+    collisionUpdate(other: Circle): GameEvent[] {
         this.startTime = getCurrentTime();
         other.startTime = getCurrentTime();
 
@@ -114,6 +113,8 @@ export abstract class Circle implements Sprite {
         // Update velocities with final velocity.
         this.vel = Vector.add(thisFinalNormal, thisFinalTan);
         other.vel = Vector.add(otherFinalNormal, otherFinalTan);
+
+        return [];
     }
 
     /**
@@ -208,7 +209,7 @@ export abstract class Circle implements Sprite {
 // Create a circle with random parameters.
 export class TargetCircle extends Circle {
 
-    constructor(app: App, color: Color, radius?: number, position?: Vector) {
+    constructor(canvasWidth: number, canvasHeight: number, color: Color, radius?: number, position?: Vector) {
         // Lower and upper bounds for circle sizes
         let radiusLowerBound: number = 10;
         let radiusUpperBound: number = 30;
@@ -216,24 +217,24 @@ export class TargetCircle extends Circle {
         radius = radius || getRandomFloat(radiusLowerBound, radiusUpperBound);
         
         // Ensure that circle never leaves bounds of canvas.
-        let x: number = position !== undefined ? position.x : getRandomFloat(radius, app.canvasWidth - radius);
-        let y: number = position !== undefined ? position.y : getRandomFloat(radius, app.canvasHeight - radius);
+        let x: number = position !== undefined ? position.x : getRandomFloat(radius, canvasWidth - radius);
+        let y: number = position !== undefined ? position.y : getRandomFloat(radius, canvasHeight - radius);
         
-        super(app, x, y, radius, radius, color);
+        super(x, y, canvasWidth, canvasHeight, radius, radius, color);
     }
 }
 
 export class SplitterCircle extends Circle {
 
-    constructor(app: App, position?: Vector) {
+    constructor(canvasWidth: number, canvasHeight: number, position?: Vector) {
         let radius = 30;
         let color: Color = new Color(255, 130, 255);
         
         // Ensure that circle never leaves bounds of canvas.
-        let x: number = position !== undefined ? position.x : getRandomFloat(radius, app.canvasWidth - radius);
-        let y: number = position !== undefined ? position.y : getRandomFloat(radius, app.canvasHeight - radius);
+        let x: number = position !== undefined ? position.x : getRandomFloat(radius, canvasWidth - radius);
+        let y: number = position !== undefined ? position.y : getRandomFloat(radius, canvasHeight - radius);
         
-        super(app, x, y, radius, radius, color);
+        super(x, y, canvasWidth, canvasHeight, radius, radius, color);
     }
 }
 
@@ -246,7 +247,7 @@ export class Bullet extends Circle {
     scoreMultiplier: number;
     bounceCounter: number;
 
-    constructor(app: App, startPos: Vector, endPos: Vector, scoreMultiplier: number = 0, bounceCounter: number = 0) {
+    constructor(canvasWidth: number, canvasHeight: number, startPos: Vector, endPos: Vector, scoreMultiplier: number = 0, bounceCounter: number = 0) {
         /*
         Calculate the velocity of the bullet based on where the turret is pointing
         
@@ -259,9 +260,10 @@ export class Bullet extends Circle {
         let vel: Vector = Vector.mul(unit, speed);
 
         super(
-            app,
             endPos.x,
             endPos.y,
+            canvasWidth,
+            canvasHeight,
             5,
             5,
             new Color(244, 229, 65),
@@ -291,8 +293,8 @@ export class Bullet extends Circle {
         return [];
     }
 
-    collisionUpdate(other: Circle): void {
-        super.collisionUpdate(other); // Physics udates to bullet
+    collisionUpdate(other: Circle): GameEvent[] {
+        let gameEvents: GameEvent[] = super.collisionUpdate(other); // Physics updates to bullet
 
         /**
          * Need to check if {@link other} is an instance of {@link SplitterCircle} first because {@link SplitterCircle}
@@ -300,7 +302,7 @@ export class Bullet extends Circle {
          * but not all {@link TargetCircle} are instances of {@link SplitterCircle}.
          */
         if (other instanceof SplitterCircle) {
-            this.app.removeCircle(other);
+            gameEvents.push({type: "REMOVE_CIRCLE", circle: other});
 
             /**
              * Right of circle:  bullet x > circle x
@@ -318,33 +320,39 @@ export class Bullet extends Circle {
 
             let newRadius: number = Math.floor(other.radius / 2);
 
-            this.app.addCircles(angles.map(angle => {
+            const newCircles: TargetCircle[] = angles.map(angle => {
                 let newPosition: Vector = new Vector(
                     other.radius * Math.sin(Math.PI * 2 * angle / 360),
                     other.radius * Math.cos(Math.PI * 2 * angle / 360)
                 );
                 let position: Vector = Vector.add(newPosition, other.pos);
                 let color: Color = getRandomColor();
-                return new TargetCircle(this.app, color, newRadius, position);
-            }));
+                return new TargetCircle(this.canvasWidth, this.canvasHeight, color, newRadius, position);
+            });
+            gameEvents = gameEvents.concat(newCircles.map(circle => ({type: "ADD_CIRCLE", circle})));
         } else if (other instanceof TargetCircle) {
             this.scoreMultiplier += 1;
-            this.app.updateScore(this);
-            this.app.removeCircle(other);
+            gameEvents.push(
+                {type: "UPDATE_SCORE", circle: this},
+                {type: "REMOVE_CIRCLE", circle: other}
+            );
         }
+        return gameEvents;
     }
 }
 
 export class SplitterBullet extends Bullet {
 
-    collisionUpdate(other: Circle): void {
+    collisionUpdate(other: Circle): GameEvent[] {
 
         if (other instanceof TargetCircle || other instanceof SplitterCircle) {
-            this.app.removeBullet(this);
-            this.app.removeCircle(other);
-
             this.scoreMultiplier += 1;
-            this.app.updateScore(this);
+
+            let gameEvents: GameEvent[] = [];
+            gameEvents.push(
+                {type: "REMOVE_BULLET", circle: this},
+                {type: "REMOVE_CIRCLE", circle: other},
+                {type: "UPDATE_SCORE", circle: this});
 
             /*
             Create 4 new bullets equidistant from one another around the circumference of the circle (i.e., a "T" shape
@@ -362,15 +370,17 @@ export class SplitterBullet extends Bullet {
             let offset: number = getRandomInteger(0, 90);
 
             let angles: number[] = baseAngles.map(a => a + offset);
-            this.app.addBullets(angles.map(angle => {
+            const newBullets: Bullet[] = angles.map(angle => {
                 let newPosition: Vector = new Vector(
                     other.radius * Math.sin(Math.PI * 2 * angle / 360),
                     other.radius * Math.cos(Math.PI * 2 * angle / 360)
                 );
-                return new Bullet(this.app, other.pos, Vector.add(newPosition, other.pos), this.scoreMultiplier);
-            }));
+                return new Bullet(this.canvasWidth, this.canvasHeight, other.pos, Vector.add(newPosition, other.pos), this.scoreMultiplier);
+            });
+            gameEvents = gameEvents.concat(newBullets.map(bullet => ({type: "ADD_BULLET", circle: bullet})));
+            return gameEvents;
         } else {
-            super.collisionUpdate(other);
+            return super.collisionUpdate(other);
         }
     }
 }
