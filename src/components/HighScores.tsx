@@ -1,7 +1,7 @@
 import React from "react";
 import { ordinal } from "../utils/util";
 import "./HighScores.css";
-import { getValue, setValue, removeValue } from "../utils/storage";
+import { getValue, setValue } from "../utils/storage";
 
 /**
  * Defines JSON object structure for how high scores are saved in localStorage.
@@ -73,14 +73,6 @@ export class HighScores extends React.Component<HighScoresProps, {}> {
                         <li>
                             <button
                                 className="button"
-                                onClick={this.removeScores.bind(this)}
-                            >
-                                Clear
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                className="button"
                                 onClick={() => {
                                     document
                                         .getElementById("highScoreImport")
@@ -136,17 +128,12 @@ export class HighScores extends React.Component<HighScoresProps, {}> {
         });
     }
 
-    private removeScores(): void {
-        removeValue(this.localStorageKey);
-        this.forceUpdate();
-    }
-
     /**
      * Convert high scores to JSON and save to {@link localStorage}.
      */
     private saveScores(scores: HighScore[]): void {
         let JSONScores: HighScoreJSON[] = scores.map((score) =>
-            score.jsonify()
+            score.jsonify(),
         );
         setValue(this.localStorageKey, JSON.stringify(JSONScores));
     }
@@ -167,7 +154,7 @@ export class HighScores extends React.Component<HighScoresProps, {}> {
     private downloadHighScores(): void {
         let scores: string = JSON.stringify(this.getScores());
         const jsonString = `data:text/json;chatset=utf-8,${encodeURIComponent(
-            scores
+            scores,
         )}`;
 
         const link = document.createElement("a");
