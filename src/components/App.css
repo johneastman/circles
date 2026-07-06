@@ -1,24 +1,49 @@
-.gameWrapper {
-    text-align: center;
-    position: relative;
+.container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: start;
+    width: 100%;
 }
 
-.center {
-    display: inline-block;
+.leftColumn {
+    grid-column: 1;
 }
 
-.scoreBoardFloating {
-    position: relative;
-    display: inline-block;
-    width: 0;
-    height: 0;
-    vertical-align: top;
+.centerColumn {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-self: center;
 }
 
-.scoreBoard {
-    display: inline-block;
-    position: absolute;
+.rightColumn {
+    grid-column: 3;
     width: 20rem;
-    text-align: left;
+    max-width: 100%;
+    justify-self: start;
+    align-self: start;
     padding-left: 1rem;
+    box-sizing: border-box;
+}
+
+@media (max-width: 1100px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+
+    .leftColumn {
+        display: none;
+    }
+
+    .centerColumn,
+    .rightColumn {
+        grid-column: 1;
+        justify-self: center;
+    }
+
+    .rightColumn {
+        width: min(100%, 20rem);
+        padding-left: 0;
+    }
 }

@@ -92,9 +92,11 @@ class App extends React.Component<{}, AppState> {
                     />
 
                     <div
-                        className="gameWrapper" /* Position div right of center div: http://jsfiddle.net/1Lrph45y/4/ */
+                        className="container" /* Position div right of center div: http://jsfiddle.net/1Lrph45y/4/ */
                     >
-                        <div className="center">
+                        <div className="leftColumn"></div>
+
+                        <div className="centerColumn">
                             <Canvas
                                 width={this.canvasWidth}
                                 height={this.canvasHeight}
@@ -104,14 +106,13 @@ class App extends React.Component<{}, AppState> {
                             />
                             <TurretModeComponent turret={this.state.turret} />
                         </div>
-                        <div className="scoreBoardFloating">
-                            <div className="scoreBoard">
-                                <HighScores
-                                    numTopScores={3}
-                                    currentScore={this.state.score}
-                                    isEndGame={this.isEndGame.bind(this)}
-                                />
-                            </div>
+
+                        <div className="rightColumn">
+                            <HighScores
+                                numTopScores={3}
+                                currentScore={this.state.score}
+                                isEndGame={this.isEndGame.bind(this)}
+                            />
                         </div>
                     </div>
                 </div>
